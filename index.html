@@ -1104,10 +1104,29 @@ function hideDeleteConfirm() {
   const btn = document.getElementById('deleteOrderBtn');
   if (btn) btn.style.display = '';
 }
-function deleteOrder(id) {
-  saveOrders(getOrders().filter(o=>String(o.id)!==String(id)));
+async function deleteOrder(id) {
+  const orders = getOrders();
+  const o = orders.find(x=>String(x.id)===String(id));
+
+  // Supprimer l'événement Google Calendar si synchronisé
+  if (o && o.calendarEventId && googleAccessToken) {
+    try {
+      await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${o.calendarEventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+      });
+      showToast('🗑 Réservation + événement Calendar supprimés');
+    } catch(e) {
+      showToast('🗑 Réservation supprimée (erreur Calendar)');
+    }
+  } else if (o && o.calendarEventId && !googleAccessToken) {
+    showToast('🗑 Réservation supprimée — reconnectez Calendar pour supprimer l\'événement');
+  } else {
+    showToast('🗑 Réservation supprimée');
+  }
+
+  saveOrders(orders.filter(x=>String(x.id)!==String(id)));
   closeDetailModal(); renderStats(); renderOrders(); renderCatalog(currentFilter);
-  showToast('🗑 Réservation supprimée');
 }
 
 async function syncOrderToCalendar(id) {
