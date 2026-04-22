@@ -1349,7 +1349,7 @@ function saveEmailJsSettings() {
 function testEmailJs() {
   const s = getSettings();
   if (!s.ejsPublicKey||!s.ejsServiceId||!s.ejsTemplateId||!s.ejsAdminEmail) {
-    showToast('⚠️ Remplissez tous les champs EmailJS d'abord'); return;
+    showToast("⚠️ Remplissez tous les champs EmailJS d'abord"); return;
   }
   emailjs.init({publicKey: s.ejsPublicKey});
   emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
