@@ -1372,8 +1372,7 @@ async function sendAdminEmail(order) {
     emailjs.init({publicKey: s.ejsPublicKey});
     const ds = new Date(order.dateStart).toLocaleDateString('fr-FR');
     const de = new Date(order.dateEnd).toLocaleDateString('fr-FR');
-    const items = order.items.map(i=>`${i.icon} ${i.name} ×${i.qty} — ${(i.price*i.qty*order.days).toFixed(2)} €`).join('
-');
+    const items = order.items.map(i=>`${i.icon} ${i.name} ×${i.qty} — ${(i.price*i.qty*order.days).toFixed(2)} €`).join(' | ');
     await emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
       to_email:   s.ejsAdminEmail,
       client_name:`${order.client.firstName} ${order.client.lastName}`,
