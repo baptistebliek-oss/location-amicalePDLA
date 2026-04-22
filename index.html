@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Location Amicale Sapeurs-Pompiers de Pont de l'Arche</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -473,6 +474,30 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
           <br><button class="settings-btn" onclick="saveGcalClientId()">Enregistrer</button>
         </div>
         <div class="settings-group">
+          <h4>📧 Notifications par email (EmailJS)</h4>
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Public Key</label>
+          <input class="settings-input" type="text" id="ejsPublicKey" placeholder="votre_public_key">
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Service ID</label>
+          <input class="settings-input" type="text" id="ejsServiceId" placeholder="service_xxxxxxx">
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Template ID</label>
+          <input class="settings-input" type="text" id="ejsTemplateId" placeholder="template_xxxxxxx">
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Email admin (destinataire)</label>
+          <input class="settings-input" type="email" id="ejsAdminEmail" placeholder="admin@exemple.com">
+          <div class="settings-hint">Créez un compte gratuit sur <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent)">emailjs.com</a> pour obtenir ces identifiants. Voir les instructions ci-dessous.</div>
+          <br><button class="settings-btn" onclick="saveEmailJsSettings()">Enregistrer</button>
+          <button class="settings-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);margin-left:.5rem" onclick="testEmailJs()">Tester l'envoi</button>
+          <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:1rem;font-size:.75rem;color:var(--text-muted);line-height:1.7">
+            <strong style="color:var(--text);display:block;margin-bottom:.4rem">📋 Instructions EmailJS :</strong>
+            1. Créez un compte sur <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent)">emailjs.com</a><br>
+            2. <strong>Add Service</strong> → choisissez Gmail → connectez votre email<br>
+            3. <strong>Email Templates</strong> → <strong>Create New Template</strong><br>
+            4. Dans le template, utilisez ces variables :<br>
+            <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{to_email}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{client_name}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{order_ref}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{date_start}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{date_end}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{items_list}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{total_ttc}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{phone}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{event_name}}</code><br>
+            5. Copiez votre <strong>Public Key</strong> (Account → General)<br>
+            6. Copiez le <strong>Service ID</strong> et le <strong>Template ID</strong>
+          </div>
+        </div>
+        <div class="settings-group">
           <h4>🔐 Mot de passe admin</h4>
           <input class="settings-input" type="password" id="newPwd1" placeholder="Nouveau mot de passe">
           <input class="settings-input" type="password" id="newPwd2" placeholder="Confirmer">
@@ -907,6 +932,9 @@ async function submitOrder() {
   orders.unshift(order);
   saveOrders(orders);
 
+  // Send admin notification email (async, non-blocking)
+  sendAdminEmail(order);
+
   let calMsg = '📌 Connectez Google Calendar en admin pour synchroniser.';
   if (googleAccessToken) {
     const ev = await createCalendarEvent(order);
@@ -1296,7 +1324,11 @@ async function createCalendarEvent(order) {
 // ══════════════════════════════════════════
 function loadSettings() {
   const s=getSettings();
-  document.getElementById('gcalClientId').value = s.gcalClientId||'';
+  document.getElementById('gcalClientId').value   = s.gcalClientId||'';
+  document.getElementById('ejsPublicKey').value   = s.ejsPublicKey||'';
+  document.getElementById('ejsServiceId').value   = s.ejsServiceId||'';
+  document.getElementById('ejsTemplateId').value  = s.ejsTemplateId||'';
+  document.getElementById('ejsAdminEmail').value  = s.ejsAdminEmail||'';
 }
 function saveGcalClientId() {
   const val=document.getElementById('gcalClientId').value.trim();
@@ -1304,6 +1336,58 @@ function saveGcalClientId() {
   const s=getSettings(); s.gcalClientId=val; saveSettings(s);
   showToast('✅ Client ID enregistré');
 }
+function saveEmailJsSettings() {
+  const s = getSettings();
+  s.ejsPublicKey  = document.getElementById('ejsPublicKey').value.trim();
+  s.ejsServiceId  = document.getElementById('ejsServiceId').value.trim();
+  s.ejsTemplateId = document.getElementById('ejsTemplateId').value.trim();
+  s.ejsAdminEmail = document.getElementById('ejsAdminEmail').value.trim();
+  saveSettings(s);
+  showToast('✅ Paramètres email enregistrés');
+}
+
+function testEmailJs() {
+  const s = getSettings();
+  if (!s.ejsPublicKey||!s.ejsServiceId||!s.ejsTemplateId||!s.ejsAdminEmail) {
+    showToast('⚠️ Remplissez tous les champs EmailJS d'abord'); return;
+  }
+  emailjs.init({publicKey: s.ejsPublicKey});
+  emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
+    to_email:   s.ejsAdminEmail,
+    client_name:'Test Client',
+    order_ref:  'ASP-TEST',
+    date_start: new Date().toLocaleDateString('fr-FR'),
+    date_end:   new Date().toLocaleDateString('fr-FR'),
+    items_list: 'Test article ×1',
+    total_ttc:  '0.00 €',
+    phone:      '—',
+    event_name: 'Test'
+  }).then(()=>showToast('✅ Email de test envoyé !'), ()=>showToast('❌ Erreur envoi email'));
+}
+
+async function sendAdminEmail(order) {
+  const s = getSettings();
+  if (!s.ejsPublicKey||!s.ejsServiceId||!s.ejsTemplateId||!s.ejsAdminEmail) return;
+  try {
+    emailjs.init({publicKey: s.ejsPublicKey});
+    const ds = new Date(order.dateStart).toLocaleDateString('fr-FR');
+    const de = new Date(order.dateEnd).toLocaleDateString('fr-FR');
+    const items = order.items.map(i=>`${i.icon} ${i.name} ×${i.qty} — ${(i.price*i.qty*order.days).toFixed(2)} €`).join('
+');
+    await emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
+      to_email:   s.ejsAdminEmail,
+      client_name:`${order.client.firstName} ${order.client.lastName}`,
+      order_ref:  order.ref,
+      date_start: ds,
+      date_end:   de,
+      items_list: items,
+      total_ttc:  order.totalTTC.toFixed(2) + ' €',
+      phone:      order.client.phone || '—',
+      event_name: order.client.eventName || '—'
+    });
+  } catch(e) { console.warn('EmailJS error:', e); }
+}
+
 function changePassword() {
   const p1=document.getElementById('newPwd1').value;
   const p2=document.getElementById('newPwd2').value;
