@@ -1236,6 +1236,7 @@ async function deleteOrder(id) {
   }
 
   saveOrders(orders.filter(x=>String(x.id)!==String(id)));
+  await deleteOrderFromSheets(id);
   closeDetailModal(); renderStats(); renderOrders(); renderCatalog(currentFilter);
 }
 
