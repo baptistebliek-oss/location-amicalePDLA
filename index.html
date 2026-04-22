@@ -1466,7 +1466,7 @@ function saveGcalClientId() {
 
 function testEmailJs() {
   emailjs.init({publicKey: 'WlvdpBHRTGdewLcAJ'});
-  emailjs.send('service_4hbxrxd', 'service_4hbxrxd', {
+  emailjs.send('service_4hbxrxd', 'template_zabze5p', {
     to_email:   'amicale.pdla@gmail.com',
     client_name:'Test Client',
     order_ref:  'ASP-TEST',
@@ -1486,7 +1486,7 @@ async function sendAdminEmail(order) {
     const ds = new Date(order.dateStart).toLocaleDateString('fr-FR');
     const de = new Date(order.dateEnd).toLocaleDateString('fr-FR');
     const items = order.items.map(i=>`${i.icon} ${i.name} x${i.qty} - ${(i.price*i.qty*order.days).toFixed(2)} EUR`).join(' | ');
-    await emailjs.send('service_4hbxrxd', 'service_4hbxrxd', {
+    await emailjs.send('service_4hbxrxd', 'template_zabze5p', {
       to_email:   'amicale.pdla@gmail.com',
       client_name:`${order.client.firstName} ${order.client.lastName}`,
       order_ref:  order.ref,
