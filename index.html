@@ -393,7 +393,7 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
       <div class="login-error" id="loginError">Mot de passe incorrect.</div>
       <input class="login-input" type="password" id="loginPwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
       <button class="login-btn" onclick="doLogin()">Se connecter</button>
-      <p style="margin-top:1rem;font-size:.75rem;color:var(--text-dim)">Mot de passe par défaut : <code style="background:var(--surface2);padding:.1rem .3rem;border-radius:2px">admin123</code></p>
+
     </div>
   </div>
   <div class="admin-dashboard" id="adminDashboard">
@@ -471,44 +471,20 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
       <div class="settings-section">
         <h3>Paramètres</h3>
         <div class="settings-group">
-          <h4>📊 Google Sheets (synchronisation)</h4>
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.4rem">URL du script Apps Script</label>
-          <input class="settings-input" type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/...">
-          <div class="settings-hint">Collez l'URL de déploiement de votre Google Apps Script. Toutes les données seront synchronisées en temps réel.</div>
-          <br>
-          <button class="settings-btn" onclick="saveSheetsUrl()">Enregistrer</button>
-          <button class="settings-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);margin-left:.5rem" onclick="testSheets()">Tester la connexion</button>
-          <div id="sheetsStatus" style="margin-top:.6rem;font-size:.8rem;"></div>
-        </div>
-        <div class="settings-group">
-          <h4>🔑 Google Calendar API</h4>
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.4rem">Client ID OAuth</label>
-          <input class="settings-input" type="text" id="gcalClientId" placeholder="123456789-xxx.apps.googleusercontent.com">
-          <div class="settings-hint">Créez vos identifiants sur <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent)">Google Cloud Console</a> → API & Services → Identifiants.</div>
-          <br><button class="settings-btn" onclick="saveGcalClientId()">Enregistrer</button>
-        </div>
-        <div class="settings-group">
-          <h4>📧 Notifications par email (EmailJS)</h4>
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Public Key</label>
-          <input class="settings-input" type="text" id="ejsPublicKey" placeholder="votre_public_key">
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Service ID</label>
-          <input class="settings-input" type="text" id="ejsServiceId" placeholder="service_xxxxxxx">
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Template ID</label>
-          <input class="settings-input" type="text" id="ejsTemplateId" placeholder="template_xxxxxxx">
-          <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">Email admin (destinataire)</label>
-          <input class="settings-input" type="email" id="ejsAdminEmail" placeholder="admin@exemple.com">
-          <div class="settings-hint">Créez un compte gratuit sur <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent)">emailjs.com</a> pour obtenir ces identifiants. Voir les instructions ci-dessous.</div>
-          <br><button class="settings-btn" onclick="saveEmailJsSettings()">Enregistrer</button>
-          <button class="settings-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);margin-left:.5rem" onclick="testEmailJs()">Tester l'envoi</button>
-          <div style="margin-top:1rem;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:1rem;font-size:.75rem;color:var(--text-muted);line-height:1.7">
-            <strong style="color:var(--text);display:block;margin-bottom:.4rem">📋 Instructions EmailJS :</strong>
-            1. Créez un compte sur <a href="https://www.emailjs.com" target="_blank" style="color:var(--accent)">emailjs.com</a><br>
-            2. <strong>Add Service</strong> → choisissez Gmail → connectez votre email<br>
-            3. <strong>Email Templates</strong> → <strong>Create New Template</strong><br>
-            4. Dans le template, utilisez ces variables :<br>
-            <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{to_email}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{client_name}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{order_ref}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{date_start}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{date_end}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{items_list}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{total_ttc}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{phone}}</code> <code style="background:var(--surface);padding:.1rem .3rem;border-radius:2px;color:var(--accent)">{{event_name}}</code><br>
-            5. Copiez votre <strong>Public Key</strong> (Account → General)<br>
-            6. Copiez le <strong>Service ID</strong> et le <strong>Template ID</strong>
+          <h4>🔄 Connexions actives</h4>
+          <div style="display:flex;flex-direction:column;gap:.6rem;">
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:2px;">
+              <span style="font-size:.9rem;">📊</span>
+              <div style="flex:1"><div style="font-size:.78rem;font-weight:700;color:var(--text)">Google Sheets</div><div style="font-size:.72rem;color:var(--green)">✅ Configuré</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:2px;">
+              <span style="font-size:.9rem;">📅</span>
+              <div style="flex:1"><div style="font-size:.78rem;font-weight:700;color:var(--text)">Google Calendar</div><div style="font-size:.72rem;color:var(--green)">✅ Configuré</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:2px;">
+              <span style="font-size:.9rem;">📧</span>
+              <div style="flex:1"><div style="font-size:.78rem;font-weight:700;color:var(--text)">Notifications email</div><div style="font-size:.72rem;color:var(--green)">✅ Configuré → amicale.pdla@gmail.com</div></div>
+            </div>
           </div>
         </div>
         <div class="settings-group">
@@ -626,7 +602,7 @@ let _sheetsLoaded = false;
 
 function getSettings(){ try { return JSON.parse(localStorage.getItem('fl_settings')||'{}'); } catch{ return {}; } }
 function saveSettings(s){ localStorage.setItem('fl_settings', JSON.stringify(s)); }
-function getAdminPwd(){ return localStorage.getItem('fl_admin_pwd') || 'admin123'; }
+function getAdminPwd(){ return localStorage.getItem('fl_admin_pwd') || 'Amicale2026'; }
 function setAdminPwd(p){ localStorage.setItem('fl_admin_pwd', p); }
 
 // ── Sheets API call (GET — CORS-safe avec Apps Script) ──
@@ -754,29 +730,7 @@ async function pushPricesToSheets() {
 function isFree(id) { return getPrice(id) === 0; }
 
 // ── Settings helpers ──
-function saveSheetsUrl() {
-  const val = document.getElementById('sheetsUrl').value.trim();
-  const s = getSettings(); s.sheetsUrl = val; saveSettings(s);
-  _sheetsUrl = val;
-  showToast('✅ URL enregistrée — rechargez la page');
-}
 
-async function testSheets() {
-  const val = document.getElementById('sheetsUrl').value.trim();
-  if (!val) { showToast("⚠️ Entrez une URL d'abord"); return; }
-  const status = document.getElementById('sheetsStatus');
-  status.textContent = '⏳ Test en cours…'; status.style.color = '#fbbf24';
-  try {
-    const tmp = _sheetsUrl; _sheetsUrl = val;
-    const data = await callSheets('getAll');
-    _sheetsUrl = tmp;
-    status.textContent = `✅ Connexion réussie — ${(data.orders||[]).length} commande(s) trouvée(s)`;
-    status.style.color = '#4ade80';
-  } catch(e) {
-    status.textContent = '❌ Erreur : ' + e.message;
-    status.style.color = '#f87171';
-  }
-}
 
 // Compute reserved qty for a product — optionally filtered by overlapping date range
 function getReservedQty(id, dateStart, dateEnd) {
@@ -1440,11 +1394,9 @@ function saveAllPrices() {
 let tokenClient = null;
 
 function connectGoogleCalendar() {
-  const s = getSettings();
-  if (!s.gcalClientId) { showToast('⚠️ Entrez votre Client ID dans Paramètres'); showTab('settings', document.querySelectorAll('.tab-btn')[2]); return; }
   if (typeof google==='undefined'||!google.accounts) { showToast('⚠️ Bibliothèque Google non chargée'); return; }
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: s.gcalClientId,
+    client_id: '425525489558-nejskankrflaep44v1d3kh942v83jb34.apps.googleusercontent.com',
     scope:'https://www.googleapis.com/auth/calendar.events',
     callback:(resp)=>{
       if(resp.error){ showToast('❌ Erreur Google'); return; }
@@ -1502,13 +1454,7 @@ async function createCalendarEvent(order) {
 // SETTINGS
 // ══════════════════════════════════════════
 function loadSettings() {
-  const s=getSettings();
-  document.getElementById('sheetsUrl').value      = s.sheetsUrl||'';
-  document.getElementById('gcalClientId').value   = s.gcalClientId||'';
-  document.getElementById('ejsPublicKey').value   = s.ejsPublicKey||'';
-  document.getElementById('ejsServiceId').value   = s.ejsServiceId||'';
-  document.getElementById('ejsTemplateId').value  = s.ejsTemplateId||'';
-  document.getElementById('ejsAdminEmail').value  = s.ejsAdminEmail||'';
+  // Configuration fixe — aucun champ dynamique
 }
 function saveGcalClientId() {
   const val=document.getElementById('gcalClientId').value.trim();
@@ -1516,55 +1462,41 @@ function saveGcalClientId() {
   const s=getSettings(); s.gcalClientId=val; saveSettings(s);
   showToast('✅ Client ID enregistré');
 }
-function saveEmailJsSettings() {
-  const s = getSettings();
-  s.ejsPublicKey  = document.getElementById('ejsPublicKey').value.trim();
-  s.ejsServiceId  = document.getElementById('ejsServiceId').value.trim();
-  s.ejsTemplateId = document.getElementById('ejsTemplateId').value.trim();
-  s.ejsAdminEmail = document.getElementById('ejsAdminEmail').value.trim();
-  saveSettings(s);
-  showToast('✅ Paramètres email enregistrés');
-}
+
 
 function testEmailJs() {
-  const s = getSettings();
-  if (!s.ejsPublicKey||!s.ejsServiceId||!s.ejsTemplateId||!s.ejsAdminEmail) {
-    showToast("⚠️ Remplissez tous les champs EmailJS d'abord"); return;
-  }
-  emailjs.init({publicKey: s.ejsPublicKey});
-  emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
-    to_email:   s.ejsAdminEmail,
+  emailjs.init({publicKey: 'WlvdpBHRTGdewLcAJ'});
+  emailjs.send('service_4hbxrxd', 'service_4hbxrxd', {
+    to_email:   'amicale.pdla@gmail.com',
     client_name:'Test Client',
     order_ref:  'ASP-TEST',
     date_start: new Date().toLocaleDateString('fr-FR'),
     date_end:   new Date().toLocaleDateString('fr-FR'),
     date_received: new Date().toLocaleDateString('fr-FR'),
-    items_list: 'Test article ×1',
-    total_ttc:  '0.00 €',
-    phone:      '—',
+    items_list: 'Test article x1',
+    total_ttc:  '0.00 EUR',
+    phone:      '-',
     event_name: 'Test'
   }).then(()=>showToast('✅ Email de test envoyé !'), ()=>showToast('❌ Erreur envoi email'));
 }
 
 async function sendAdminEmail(order) {
-  const s = getSettings();
-  if (!s.ejsPublicKey||!s.ejsServiceId||!s.ejsTemplateId||!s.ejsAdminEmail) return;
   try {
-    emailjs.init({publicKey: s.ejsPublicKey});
+    emailjs.init({publicKey: 'WlvdpBHRTGdewLcAJ'});
     const ds = new Date(order.dateStart).toLocaleDateString('fr-FR');
     const de = new Date(order.dateEnd).toLocaleDateString('fr-FR');
-    const items = order.items.map(i=>`${i.icon} ${i.name} ×${i.qty} — ${(i.price*i.qty*order.days).toFixed(2)} €`).join(' | ');
-    await emailjs.send(s.ejsServiceId, s.ejsTemplateId, {
-      to_email:   s.ejsAdminEmail,
+    const items = order.items.map(i=>`${i.icon} ${i.name} x${i.qty} - ${(i.price*i.qty*order.days).toFixed(2)} EUR`).join(' | ');
+    await emailjs.send('service_4hbxrxd', 'service_4hbxrxd', {
+      to_email:   'amicale.pdla@gmail.com',
       client_name:`${order.client.firstName} ${order.client.lastName}`,
       order_ref:  order.ref,
       date_start: ds,
       date_end:   de,
       date_received: new Date(order.createdAt).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
       items_list: items,
-      total_ttc:  order.totalTTC.toFixed(2) + ' €',
-      phone:      order.client.phone || '—',
-      event_name: order.client.eventName || '—'
+      total_ttc:  order.totalTTC.toFixed(2) + ' EUR',
+      phone:      order.client.phone || '-',
+      event_name: order.client.eventName || '-'
     });
   } catch(e) { console.warn('EmailJS error:', e); }
 }
@@ -1614,13 +1546,8 @@ async function initApp() {
   document.getElementById('searchStart').min = today;
   document.getElementById('searchEnd').min   = today;
 
-  const s = getSettings();
-  // URL pré-configurée — peut être modifiée dans Paramètres
-  if (!s.sheetsUrl) {
-    s.sheetsUrl = 'https://script.google.com/macros/s/AKfycbxsPFN_CRCX1n5TCOJcgNmZLxz4czLeMJkjtiKaC1anmPwFnvc_idzeTnRVoKp9pl90Vg/exec';
-    saveSettings(s);
-  }
-  _sheetsUrl = s.sheetsUrl || '';
+  // Configuration fixe — ne pas modifier
+  _sheetsUrl = 'https://script.google.com/macros/s/AKfycbxsPFN_CRCX1n5TCOJcgNmZLxz4czLeMJkjtiKaC1anmPwFnvc_idzeTnRVoKp9pl90Vg/exec';
 
   if (_sheetsUrl) {
     await loadFromSheets();
