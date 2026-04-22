@@ -629,14 +629,15 @@ function saveSettings(s){ localStorage.setItem('fl_settings', JSON.stringify(s))
 function getAdminPwd(){ return localStorage.getItem('fl_admin_pwd') || 'admin123'; }
 function setAdminPwd(p){ localStorage.setItem('fl_admin_pwd', p); }
 
-// ── Sheets API call ──
+// ── Sheets API call (GET — CORS-safe avec Apps Script) ──
 async function callSheets(action, payload={}) {
   const url = _sheetsUrl;
   if (!url) throw new Error('URL Sheets non configurée');
-  const resp = await fetch(url, {
-    method:'POST',
-    body: JSON.stringify({action, ...payload})
+  const params = new URLSearchParams({
+    action,
+    data: JSON.stringify(payload)
   });
+  const resp = await fetch(`${url}?${params}`, {method:'GET'});
   const data = await resp.json();
   if (data.error) throw new Error(data.error);
   return data;
@@ -648,17 +649,17 @@ async function loadFromSheets() {
     showSyncIndicator('⏳ Chargement…', '#fbbf24');
     const data = await callSheets('getAll');
     _orders  = data.orders  || [];
-    // Merge stock: Sheets values override defaults
+    // Merge stock: Sheets returns string keys — check both string and number
     PRODUCTS_BASE.forEach(p => {
-      _stock[p.id] = data.stock && data.stock[p.id] !== undefined
-        ? Number(data.stock[p.id])
-        : p.defaultStock;
+      const sid = String(p.id);
+      const val = data.stock && (data.stock[sid] !== undefined ? data.stock[sid] : data.stock[p.id]);
+      _stock[p.id] = val !== undefined && val !== '' ? Number(val) : p.defaultStock;
     });
-    // Merge prices: Sheets values override defaults
+    // Merge prices: same key coercion
     PRODUCTS_BASE.forEach(p => {
-      _prices[p.id] = data.prices && data.prices[p.id] !== undefined
-        ? Number(data.prices[p.id])
-        : p.price;
+      const sid = String(p.id);
+      const val = data.prices && (data.prices[sid] !== undefined ? data.prices[sid] : data.prices[p.id]);
+      _prices[p.id] = val !== undefined && val !== '' ? Number(val) : p.price;
     });
     _sheetsLoaded = true;
     // Backup to localStorage
