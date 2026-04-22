@@ -426,7 +426,7 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
         <div class="orders-table-wrap">
           <table class="orders-table" id="ordersTable">
             <thead><tr>
-              <th>Réf.</th><th>Client</th><th>Dates</th><th>Articles</th><th>Total TTC</th><th>Statut</th><th>Agenda</th><th>Actions</th>
+              <th>Réf.</th><th>Client</th><th>Dates</th><th>Articles</th><th>Total TTC</th><th>Statut</th><th>Actions</th>
             </tr></thead>
             <tbody id="ordersBody"></tbody>
           </table>
@@ -1136,7 +1136,6 @@ function renderOrders() {
     const ds=new Date(o.dateStart).toLocaleDateString('fr-FR');
     const de=new Date(o.dateEnd).toLocaleDateString('fr-FR');
     const items=o.items.map(i=>`${i.icon}${i.name}×${i.qty}`).join(' | ');
-    const synced=!!o.calendarEventId;
     return `<tr>
       <td><span class="order-ref">${o.ref}</span></td>
       <td>${o.client.firstName} ${o.client.lastName}<br><span style="font-size:.73rem;color:var(--text-muted)">${o.client.email}</span></td>
@@ -1144,10 +1143,6 @@ function renderOrders() {
       <td style="font-size:.76rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${items}">${items}</td>
       <td style="font-weight:600">${o.totalTTC.toFixed(2)} €</td>
       <td><span class="status-pill status-${o.status}">${o.status.replace('_',' ')}</span></td>
-      <td style="text-align:center" title="${synced?'Synchronisé':'Non synchronisé'}">
-        <span style="font-size:1rem;opacity:${synced?1:.25}">📅</span>
-        ${synced&&o.calendarEventLink?`<a href="${o.calendarEventLink}" target="_blank" style="font-size:.7rem;color:var(--blue);display:block">Voir</a>`:''}
-      </td>
       <td><button class="action-btn" onclick="openDetail('${o.id}')">Détails</button></td>
     </tr>`;
   }).join('');
