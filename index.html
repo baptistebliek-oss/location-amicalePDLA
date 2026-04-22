@@ -252,16 +252,16 @@ header {
 .stock-header h3 { font-family:'Playfair Display',serif; font-weight:700; font-size:1.3rem; }
 .stock-hint { font-size:.82rem; color:var(--text-muted); background:var(--accent-light); border:1px solid rgba(200,98,42,.2); padding:.6rem 1rem; border-radius:2px; margin-bottom:1.5rem; }
 .stock-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
-.stock-card { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:1.2rem; box-shadow:var(--shadow); display:flex; align-items:center; gap:1rem; }
+.stock-card { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:1.2rem; box-shadow:var(--shadow); display:flex; align-items:flex-start; gap:1rem; overflow:hidden; }
 .stock-card-icon { font-size:2.2rem; width:50px; text-align:center; flex-shrink:0; }
-.stock-card-info { flex:1; }
-.stock-card-name { font-weight:600; font-size:.95rem; margin-bottom:.2rem; }
+.stock-card-info { flex:1; min-width:0; }
+.stock-card-name { font-weight:600; font-size:.95rem; margin-bottom:.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .stock-card-cat { font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin-bottom:.6rem; }
-.stock-edit { display:flex; align-items:center; gap:.5rem; }
-.stock-edit label { font-size:.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
-.stock-input { width:70px; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.4rem .6rem; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:600; outline:none; text-align:center; border-radius:2px; transition:border-color .2s; }
+.stock-edit { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
+.stock-edit label { font-size:.72rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; width:100%; margin-bottom:.1rem; }
+.stock-input { width:65px; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.38rem .5rem; font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:600; outline:none; text-align:center; border-radius:2px; transition:border-color .2s; flex-shrink:0; }
 .stock-input:focus { border-color:var(--accent); }
-.stock-save-btn { background:var(--accent); border:none; color:#fff; padding:.4rem .8rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.78rem; cursor:pointer; border-radius:2px; transition:background .2s; white-space:nowrap; }
+.stock-save-btn { background:var(--accent); border:none; color:#fff; padding:.38rem .7rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.75rem; cursor:pointer; border-radius:2px; transition:background .2s; white-space:nowrap; flex-shrink:0; }
 .stock-save-btn:hover { background:var(--accent-dim); }
 .stock-available { font-size:.75rem; margin-top:.4rem; }
 .stock-available.ok { color:var(--green); }
