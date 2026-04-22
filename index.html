@@ -5,7 +5,6 @@
 <meta name="google-site-verification" content="lKRqi41iXqRpuedoLOEBv8vHIin1lVTQqk8tFiX5EX0" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Location Amicale Sapeurs-Pompiers de Pont de l'Arche</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -201,12 +200,8 @@ header {
 .admin-dashboard { display:none; min-height:calc(100vh - 68px); }
 .admin-topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; box-shadow:var(--shadow); }
 .admin-topbar-title { font-family:'Playfair Display',serif; font-weight:700; font-size:1.3rem; }
-.gcal-status { display:flex; align-items:center; gap:.8rem; }
-.gcal-dot { width:9px; height:9px; border-radius:50%; background:var(--border); }
-.gcal-dot.connected { background:var(--green); box-shadow:0 0 6px var(--green); }
-.gcal-label { font-size:.8rem; color:var(--text-muted); }
-.gcal-btn { background:none; border:1px solid var(--border); color:var(--text-muted); padding:.35rem .9rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.78rem; cursor:pointer; transition:all .2s; border-radius:2px; }
-.gcal-btn:hover { border-color:var(--blue); color:var(--blue); }
+.topbar-btn { background:none; border:1px solid var(--border); color:var(--text-muted); padding:.35rem .9rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.78rem; cursor:pointer; transition:all .2s; border-radius:2px; }
+.topbar-btn:hover { border-color:var(--blue); color:var(--blue); }
 
 .admin-tabs { display:flex; border-bottom:1px solid var(--border); padding:0 2rem; background:var(--surface); }
 .tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:var(--text-muted); padding:.85rem 1.2rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.85rem; cursor:pointer; transition:all .2s; }
@@ -400,12 +395,10 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
     <div class="admin-topbar">
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
         <div class="admin-topbar-title">📋 Tableau de bord</div>
-        <button class="gcal-btn" onclick="reloadFromSheets()" title="Recharger les données depuis Google Sheets">🔄 Actualiser</button>
+        <button class="topbar-btn" onclick="reloadFromSheets()" title="Recharger les données depuis Google Sheets">🔄 Actualiser</button>
       </div>
-      <div class="gcal-status">
-        <div class="gcal-dot" id="gcalDot"></div>
-        <span class="gcal-label" id="gcalLabel">Google Calendar non connecté</span>
-        <button class="gcal-btn" id="gcalConnectBtn" onclick="connectGoogleCalendar()">Connecter</button>
+      <div style="display:flex;align-items:center;gap:.6rem;font-size:.78rem;color:var(--text-muted)">
+        <span style="color:var(--green)">📅</span> Calendar automatique
       </div>
     </div>
     <div class="admin-tabs">
@@ -551,7 +544,7 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
     <h2>Réservation confirmée !</h2>
     <p>Votre demande a bien été enregistrée. Notre équipe vous contactera sous 24h pour valider votre réservation.</p>
     <div class="modal-ref" id="orderRef">REF-000000</div>
-    <div id="calendarStatus" style="font-size:.82rem;color:var(--text-muted);margin-bottom:1.2rem"></div>
+    <div id="calendarStatus" style="font-size:.82rem;color:var(--green);margin-bottom:1.2rem"></div>
     <button class="modal-btn" onclick="closeSuccessModal()">Parfait !</button>
   </div>
 </div>
@@ -682,7 +675,21 @@ function saveOrders(o) {
 
 async function addOrderToSheets(order) {
   if (!_sheetsUrl) return;
-  try { await callSheets('saveOrder', {order}); } catch(e) { console.warn(e); }
+  try {
+    const result = await callSheets('saveOrder', {order});
+    // Récupérer l'eventId/link créé côté Apps Script et mettre à jour en local
+    if (result && result.calendarEventId) {
+      const allOrders = getOrders();
+      const idx = allOrders.findIndex(o => String(o.id) === String(order.id));
+      if (idx !== -1) {
+        allOrders[idx].calendarEventId   = result.calendarEventId;
+        allOrders[idx].calendarEventLink = result.calendarEventLink || '';
+        saveOrders(allOrders);
+        renderStats(); renderOrders();
+      }
+      document.getElementById('calendarStatus').textContent = '📅 Événement ajouté à Google Calendar !';
+    }
+  } catch(e) { console.warn(e); }
 }
 
 async function updateOrderInSheets(order) {
@@ -767,7 +774,6 @@ function getProducts(dateStart, dateEnd) {
 // ══════════════════════════════════════════
 let cart = {};
 let quantities = {};
-let googleAccessToken = null;
 let currentFilter = 'all';
 let currentOrderFilter = 'all';
 let selectedStart = null; // date strings
@@ -1025,21 +1031,14 @@ async function submitOrder() {
   orders.unshift(order);
   saveOrders(orders);
 
-  // Push to Sheets (async, non-blocking)
+  // Push to Sheets — la création de l'événement Calendar est gérée automatiquement côté Apps Script
   addOrderToSheets(order);
 
   // Send admin notification email (async, non-blocking)
   sendAdminEmail(order);
 
-  let calMsg = '📌 Connectez Google Calendar en admin pour synchroniser.';
-  if (googleAccessToken) {
-    const ev = await createCalendarEvent(order);
-    if (ev) { order.calendarEventId=ev.id; order.calendarEventLink=ev.link; orders[0]=order; saveOrders(orders); calMsg='✅ Ajouté à Google Calendar !'; }
-    else calMsg='⚠️ Erreur Calendar — synchronisez depuis l\'admin.';
-  }
-
   document.getElementById('orderRef').textContent = order.ref;
-  document.getElementById('calendarStatus').textContent = calMsg;
+  document.getElementById('calendarStatus').textContent = '⏳ Création de l\'événement Calendar en cours…';
   document.getElementById('successModal').classList.add('open');
 }
 
@@ -1074,7 +1073,7 @@ function initAdmin() {
   const ok = sessionStorage.getItem('fl_logged');
   document.getElementById('adminLogin').style.display     = ok ? 'none'  : 'flex';
   document.getElementById('adminDashboard').style.display = ok ? 'block' : 'none';
-  if (ok) { renderStats(); renderOrders(); updateGcalUI(); }
+  if (ok) { renderStats(); renderOrders(); }
 }
 
 function doLogin() {
@@ -1099,7 +1098,6 @@ function renderStats() {
     {val:orders.filter(o=>o.status==='en_cours').length, label:'En cours',  cls:''},
     {val:orders.filter(o=>o.status==='terminée').length, label:'Terminées', cls:'green'},
     {val:rev.toFixed(0)+' €',        label:'CA Total TTC',   cls:'red'},
-    {val:orders.filter(o=>!o.calendarEventId).length, label:'Non sync Cal.',cls:''},
   ].forEach((s,i)=>{
     document.getElementById('statsGrid').innerHTML = [
       {val:orders.length,              label:'Réservations',    cls:'blue'},
@@ -1107,7 +1105,6 @@ function renderStats() {
       {val:orders.filter(o=>o.status==='en_cours').length, label:'En cours',  cls:''},
       {val:orders.filter(o=>o.status==='terminée').length, label:'Terminées', cls:'green'},
       {val:rev.toFixed(0)+' €',        label:'CA Total TTC',   cls:'red'},
-      {val:orders.filter(o=>!o.calendarEventId).length, label:'Non sync Cal.',cls:''},
     ].map(s=>`<div class="stat-card ${s.cls}"><div class="stat-val">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('');
   });
 }
@@ -1163,7 +1160,7 @@ function openDetail(id) {
       <div class="detail-item"><label>Début</label><span>${ds}</span></div>
       <div class="detail-item"><label>Fin</label><span>${de} (${o.days} j.)</span></div>
       <div class="detail-item"><label>Enregistrée le</label><span>${new Date(o.createdAt).toLocaleString('fr-FR')}</span></div>
-      <div class="detail-item"><label>Google Calendar</label><span>${o.calendarEventId?'✅ Synchronisé':'❌ Non synchronisé'}</span></div>
+      <div class="detail-item"><label>Google Calendar</label><span>${o.calendarEventId ? '✅ Événement créé' : '⏳ En attente'}</span></div>
     </div>
     <div class="detail-items-title">Articles réservés</div>
     ${o.items.map(i=>`<div class="detail-item-row"><span>${i.icon} ${i.name} ×${i.qty}</span><span>${(i.price*i.qty*o.days).toFixed(2)} €</span></div>`).join('')}
@@ -1175,9 +1172,9 @@ function openDetail(id) {
       </select>
     </div>
     <div class="detail-actions">
-      ${!o.calendarEventId
-        ? `<button class="detail-btn gcal" onclick="syncOrderToCalendar('${o.id}')">📅 Sync Google Calendar</button>`
-        : `<a href="${o.calendarEventLink||'#'}" target="_blank" class="detail-btn gcal" style="text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center">📅 Voir dans Calendar</a>`}
+      ${o.calendarEventLink
+        ? `<a href="${o.calendarEventLink}" target="_blank" class="detail-btn gcal" style="text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center">📅 Voir dans Calendar</a>`
+        : `<span class="detail-btn gcal" style="opacity:.5;cursor:default;display:inline-flex;align-items:center;justify-content:center">📅 Calendar en attente…</span>`}
       <button class="detail-btn danger" id="deleteOrderBtn" onclick="showDeleteConfirm('${o.id}')">🗑 Supprimer</button>
     </div>
     <div class="confirm-bar" id="deleteConfirmBar">
@@ -1215,41 +1212,13 @@ function hideDeleteConfirm() {
   if (btn) btn.style.display = '';
 }
 async function deleteOrder(id) {
-  const orders = getOrders();
-  const o = orders.find(x=>String(x.id)===String(id));
-
-  // Supprimer l'événement Google Calendar si synchronisé
-  if (o && o.calendarEventId && googleAccessToken) {
-    try {
-      await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${o.calendarEventId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${googleAccessToken}` }
-      });
-      showToast('🗑 Réservation + événement Calendar supprimés');
-    } catch(e) {
-      showToast('🗑 Réservation supprimée (erreur Calendar)');
-    }
-  } else if (o && o.calendarEventId && !googleAccessToken) {
-    showToast('🗑 Réservation supprimée — reconnectez Calendar pour supprimer l\'événement');
-  } else {
-    showToast('🗑 Réservation supprimée');
-  }
-
-  saveOrders(orders.filter(x=>String(x.id)!==String(id)));
-  await deleteOrderFromSheets(id);
+  showToast('⏳ Suppression en cours…');
+  saveOrders(getOrders().filter(x=>String(x.id)!==String(id)));
+  await deleteOrderFromSheets(id); // supprime aussi l'événement Calendar côté serveur
   closeDetailModal(); renderStats(); renderOrders(); renderCatalog(currentFilter);
+  showToast('🗑 Réservation supprimée');
 }
 
-async function syncOrderToCalendar(id) {
-  if(!googleAccessToken){ showToast('⚠️ Connectez Google Calendar d\'abord'); return; }
-  const orders=getOrders();
-  const o=orders.find(x=>String(x.id)===String(id));
-  if(!o) return;
-  showToast('⏳ Synchronisation…');
-  const ev=await createCalendarEvent(o);
-  if(ev){ o.calendarEventId=ev.id; o.calendarEventLink=ev.link; saveOrders(orders); updateOrderInSheets(o); renderStats(); renderOrders(); closeDetailModal(); showToast('✅ Synchronisé !'); }
-  else showToast('❌ Erreur de synchronisation');
-}
 
 // ══════════════════════════════════════════
 // STOCK MANAGEMENT
@@ -1389,79 +1358,12 @@ function saveAllPrices() {
   pushPricesToSheets();
 }
 
-// ══════════════════════════════════════════
-// GOOGLE CALENDAR
-// ══════════════════════════════════════════
-let tokenClient = null;
-
-function connectGoogleCalendar() {
-  if (typeof google==='undefined'||!google.accounts) { showToast('⚠️ Bibliothèque Google non chargée'); return; }
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: '425525489558-nejskankrflaep44v1d3kh942v83jb34.apps.googleusercontent.com',
-    scope:'https://www.googleapis.com/auth/calendar.events',
-    callback:(resp)=>{
-      if(resp.error){ showToast('❌ Erreur Google'); return; }
-      googleAccessToken=resp.access_token;
-      updateGcalUI();
-      showToast('✅ Google Calendar connecté !');
-    }
-  });
-  tokenClient.requestAccessToken();
-}
-
-function updateGcalUI() {
-  const dot=document.getElementById('gcalDot');
-  const label=document.getElementById('gcalLabel');
-  const btn=document.getElementById('gcalConnectBtn');
-  if(googleAccessToken) {
-    dot.classList.add('connected');
-    label.textContent='Google Calendar connecté';
-    btn.textContent='Reconnecter';
-  } else {
-    dot.classList.remove('connected');
-    label.textContent='Google Calendar non connecté';
-    btn.textContent='Connecter';
-  }
-}
-
-async function createCalendarEvent(order) {
-  if (!googleAccessToken) return null;
-  try {
-    const items = order.items.map(i=>`  • ${i.icon} ${i.name} ×${i.qty} — ${(i.price*i.qty*order.days).toFixed(2)} €`).join('\n');
-    const body = {
-      summary:`🚒 Location ${order.ref} — ${order.client.firstName} ${order.client.lastName}${order.client.eventName?' ('+order.client.eventName+')':''}`,
-      description:`📋 RÉSERVATION — AMICALE SP PONT DE L'ARCHE\n─────────────────────────────────────────\n`+
-        `Réf : ${order.ref}\nClient : ${order.client.firstName} ${order.client.lastName}\n`+
-        `Tél : ${order.client.phone||'—'}\n`+
-        `Événement : ${order.client.eventName||'—'}\n\n`+
-        `📦 ARTICLES :\n${items}\n\n`+
-        `💶 Total TTC : ${order.totalTTC.toFixed(2)} €\nDurée : ${order.days} jour(s)`,
-      start:{ date:order.dateStart },
-      end:  { date:order.dateEnd },
-      colorId:'6',
-    };
-    const resp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
-      method:'POST',
-      headers:{'Authorization':`Bearer ${googleAccessToken}`,'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return { id:data.id, link:data.htmlLink };
-  } catch { return null; }
-}
 
 // ══════════════════════════════════════════
 // SETTINGS
 // ══════════════════════════════════════════
 function loadSettings() {
   // Configuration fixe — aucun champ dynamique
-}
-function saveGcalClientId() {
-  const val=document.getElementById('gcalClientId').value.trim();
-  if(!val){ showToast('⚠️ Client ID vide'); return; }
-  const s=getSettings(); s.gcalClientId=val; saveSettings(s);
-  showToast('✅ Client ID enregistré');
 }
 
 
