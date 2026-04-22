@@ -677,7 +677,7 @@ async function addOrderToSheets(order) {
   if (!_sheetsUrl) return;
   try {
     const result = await callSheets('saveOrder', {order});
-    // Récupérer l'eventId/link créé côté Apps Script et mettre à jour en local
+    console.log('Sheets result:', JSON.stringify(result));
     if (result && result.calendarEventId) {
       const allOrders = getOrders();
       const idx = allOrders.findIndex(o => String(o.id) === String(order.id));
@@ -688,8 +688,16 @@ async function addOrderToSheets(order) {
         renderStats(); renderOrders();
       }
       document.getElementById('calendarStatus').textContent = '📅 Événement ajouté à Google Calendar !';
+    } else if (result && result.calendarError) {
+      document.getElementById('calendarStatus').textContent = '⚠️ Erreur Calendar : ' + result.calendarError;
+    } else {
+      // Ni succès ni erreur — affiche le résultat brut pour debug
+      document.getElementById('calendarStatus').textContent = '⚠️ Résultat inattendu : ' + JSON.stringify(result);
     }
-  } catch(e) { console.warn(e); }
+  } catch(e) {
+    document.getElementById('calendarStatus').textContent = '⚠️ Erreur réseau : ' + e.message;
+    console.warn(e);
+  }
 }
 
 async function updateOrderInSheets(order) {
