@@ -310,6 +310,41 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
   .page,.admin-topbar,.orders-section,.stats-grid,.stock-section { padding:1rem; }
   .detail-grid { grid-template-columns:1fr; }
   .hero { padding:3rem 1rem 2.5rem; }
+
+  /* ── Header mobile : 2 rangées ── */
+  header {
+    height: auto;
+    min-height: 68px;
+    flex-wrap: wrap;
+    padding: .6rem 1rem;
+    gap: .4rem;
+    row-gap: .4rem;
+  }
+  .logo {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  #syncIndicator {
+    order: 3;
+    flex: 0 0 auto;
+  }
+  .nav-links {
+    order: 4;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: .4rem;
+    padding: .35rem 0 .25rem;
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    font-size: .75rem;
+    padding: .38rem .75rem;
+  }
+  .cart-btn {
+    font-size: .8rem;
+    padding: .42rem .9rem;
+  }
 }
 </style>
 </head>
