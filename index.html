@@ -158,6 +158,26 @@ header {
 /* ══ CATALOG ══ */
 .catalog { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.5rem; margin-bottom:3rem; }
 .card { background:rgba(28,27,25,.78); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid var(--border); border-radius:4px; display:flex; flex-direction:column; box-shadow:var(--shadow); transition:box-shadow .2s,transform .2s,border-color .2s; overflow:hidden; }
+
+/* ══ PRODUCT IMAGES ══ */
+.item-img {
+  width:100%; aspect-ratio:1/1; object-fit:cover;
+  display:block; border-bottom:1px solid var(--border);
+  transition:transform .3s ease;
+}
+.card:hover .item-img { transform:scale(1.04); }
+.card-item-img { border-radius:0; }
+
+/* Cart */
+.cart-img { width:40px; height:40px; object-fit:cover; border-radius:3px; }
+.cart-item-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* Stock grid */
+.stock-img { width:50px; height:50px; object-fit:cover; border-radius:3px; }
+.stock-card-icon { width:50px; height:50px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* Order detail */
+.detail-img { width:28px; height:28px; object-fit:cover; border-radius:2px; vertical-align:middle; margin-right:4px; }
 .card:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); border-color:var(--accent); }
 .card-img { height:150px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:4rem; position:relative; }
 .stock-badge { position:absolute; top:10px; right:10px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; padding:.22rem .65rem; border-radius:2px; }
@@ -652,17 +672,23 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
 // PRODUCTS (base data — stock from localStorage)
 // ══════════════════════════════════════════
 const PRODUCTS_BASE = [
-  {id:1, cat:'mobilier',  icon:'🪑', name:'Table',                  desc:'Table pliante robuste, idéale pour banquets, repas et ateliers.',        price:6,   unit:'jour', defaultStock:5},
-  {id:2, cat:'mobilier',  icon:'🪵', name:'Banc',                   desc:'Banc en bois solide, peut accueillir 4 à 6 personnes.',                  price:4,   unit:'jour', defaultStock:7},
-  {id:3, cat:'vaisselle', icon:'🥤', name:'Écocup',                 desc:'Verre réutilisable 33cl, lavable, logo personnalisable.',                price:0.5, unit:'jour', defaultStock:150},
-  {id:4, cat:'vaisselle', icon:'🫙', name:'Carafe',                 desc:'Carafe en verre 1L, idéale pour eau, jus ou limonade.',                  price:2,   unit:'jour', defaultStock:25},
-  {id:5, cat:'cuisine',   icon:'🥞', name:'Crêpière',               desc:'Crêpière électrique professionnelle Ø40cm, 3000W.',                     price:18,  unit:'jour', defaultStock:2},
-  {id:6, cat:'cuisine',   icon:'🍫', name:'Fontaine en chocolat',   desc:'Fontaine à chocolat 3 niveaux, capacité 500g, inox brossé.',             price:25,  unit:'jour', defaultStock:3},
-  {id:7, cat:'cuisine',   icon:'🍭', name:'Machine à barbe à papa', desc:'Machine professionnelle acier inox, production continue.',               price:22,  unit:'jour', defaultStock:1},
-  {id:8, cat:'cuisine',   icon:'☕', name:'Percolateur',            desc:'Machine à expresso professionnelle 10L, 1 groupe, idéale événements.',   price:20,  unit:'jour', defaultStock:1},
+  {id:1, cat:'mobilier',  icon:'./imgs/item_table.jpg',       name:'Table',                  desc:'Table pliante robuste, idéale pour banquets, repas et ateliers.',        price:6,   unit:'jour', defaultStock:5},
+  {id:2, cat:'mobilier',  icon:'./imgs/item_banc.jpg',         name:'Banc',                   desc:'Banc en bois solide, peut accueillir 4 à 6 personnes.',                  price:4,   unit:'jour', defaultStock:7},
+  {id:3, cat:'vaisselle', icon:'./imgs/item_ecocup.jpg',       name:'Écocup',                 desc:'Verre réutilisable 33cl, lavable, logo personnalisable.',                price:0.5, unit:'jour', defaultStock:150},
+  {id:4, cat:'vaisselle', icon:'./imgs/item_carafe.jpg',       name:'Carafe',                 desc:'Carafe en verre 1L, idéale pour eau, jus ou limonade.',                  price:2,   unit:'jour', defaultStock:25},
+  {id:5, cat:'cuisine',   icon:'./imgs/item_crepiere.jpg',     name:'Crêpière',               desc:'Crêpière électrique professionnelle Ø40cm, 3000W.',                     price:18,  unit:'jour', defaultStock:2},
+  {id:6, cat:'cuisine',   icon:'./imgs/item_chocolat.jpg',     name:'Fontaine en chocolat',   desc:'Fontaine à chocolat 3 niveaux, capacité 500g, inox brossé.',             price:25,  unit:'jour', defaultStock:3},
+  {id:7, cat:'cuisine',   icon:'./imgs/item_barbapapa.jpg',    name:'Machine à barbe à papa', desc:'Machine professionnelle acier inox, production continue.',               price:22,  unit:'jour', defaultStock:1},
+  {id:8, cat:'cuisine',   icon:'./imgs/item_percolateur.jpg',  name:'Percolateur',            desc:'Machine à expresso professionnelle 10L, 1 groupe, idéale événements.',   price:20,  unit:'jour', defaultStock:1},
   {id:9, cat:'animation', icon:'🔊', name:'Enceinte Bluetooth',     desc:'Enceinte amplifiée 300W RMS, Bluetooth + Jack, autonomie 8h.',           price:35,  unit:'jour', defaultStock:1},
   {id:10,cat:'animation', icon:'📸', name:'Photobooth',             desc:'Borne photo automatique avec imprimante intégrée, fond inclus.',         price:60,  unit:'jour', defaultStock:1},
 ];
+
+  // Render icon: image path or emoji
+  function renderIcon(icon, cls='') {
+    if(icon && icon.startsWith('./')) return `<img src="${icon}" class="item-img ${cls}" alt="">`;
+    return `<span class="${cls}">${icon}</span>`;
+  }
 const catLabels = {mobilier:'Mobilier',vaisselle:'Vaisselle',cuisine:'Cuisine & Boissons',animation:'Animation'};
 
 // ══════════════════════════════════════════
@@ -952,7 +978,7 @@ function renderCatalog(filter='all') {
     return `<div class="card">
       <div class="card-img">
         <span class="stock-badge ${sc}">${sl}</span>
-        <span>${p.icon}</span>
+        ${renderIcon(p.icon, "card-item-img")}
       </div>
       <div class="card-body">
         <div class="card-cat">${catLabels[p.cat]}</div>
@@ -1015,7 +1041,7 @@ function updateCartUI() {
   ci.innerHTML = keys.map(k=>{
     const p = PRODUCTS_BASE.find(x=>x.id==k);
     return `<div class="cart-item">
-      <div class="cart-item-icon">${p.icon}</div>
+      <div class="cart-item-icon">${renderIcon(p.icon, "cart-img")}</div>
       <div class="cart-item-info">
         <div class="cart-item-name">${p.name}</div>
         <div class="cart-item-price">${cart[k]} × ${p.price === 0 ? 'Gratuit' : (p.price < 1 ? p.price.toFixed(2) : p.price) + ' €/' + p.unit}</div>
@@ -1248,7 +1274,7 @@ function openDetail(id) {
       <div class="detail-item"><label>Google Calendar</label><span>${o.calendarEventId ? '✅ Événement créé' : '⏳ En attente'}</span></div>
     </div>
     <div class="detail-items-title">Articles réservés</div>
-    ${o.items.map(i=>`<div class="detail-item-row"><span>${i.icon} ${i.name} ×${i.qty}</span><span>${(i.price*i.qty*o.days).toFixed(2)} €</span></div>`).join('')}
+    ${o.items.map(i=>`<div class="detail-item-row"><span>${renderIcon(i.icon,"detail-img")} ${i.name} ×${i.qty}</span><span>${(i.price*i.qty*o.days).toFixed(2)} €</span></div>`).join('')}
     <div class="detail-total"><span>Total TTC</span><span>${o.totalTTC.toFixed(2)} €</span></div>
     <div style="margin-top:1.2rem">
       <label style="font-size:.72rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.4rem">Modifier le statut</label>
@@ -1315,7 +1341,7 @@ function renderStockGrid() {
     const cls = avail===0?'out':'ok';
     const availText = avail===0 ? 'Indisponible' : `${avail} disponible${avail>1?'s':''}`;
     return `<div class="stock-card">
-      <div class="stock-card-icon">${p.icon}</div>
+      <div class="stock-card-icon">${renderIcon(p.icon, "stock-img")}</div>
       <div class="stock-card-info">
         <div class="stock-card-name">${p.name}</div>
         <div class="stock-card-cat">${catLabels[p.cat]}</div>
@@ -1369,7 +1395,7 @@ function renderPriceGrid() {
     const free = price === 0;
     const defaultPrice = p.price;
     return `<div class="stock-card">
-      <div class="stock-card-icon">${p.icon}</div>
+      <div class="stock-card-icon">${renderIcon(p.icon, "stock-img")}</div>
       <div class="stock-card-info">
         <div class="stock-card-name">${p.name}</div>
         <div class="stock-card-cat">${catLabels[p.cat]}</div>
