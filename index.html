@@ -184,6 +184,16 @@ header {
 .stock-badge.ok { background:var(--green-bg); color:var(--green); border:1px solid rgba(45,122,79,.2); }
 .stock-badge.low { background:var(--yellow-bg); color:var(--yellow); border:1px solid rgba(176,125,26,.2); }
 .stock-badge.out { background:var(--red-bg); color:var(--red); border:1px solid rgba(185,53,53,.2); }
+.stock-badge.soon { background:rgba(80,60,20,.7); color:#f0c060; border:1px solid rgba(200,160,40,.35); letter-spacing:.04em; }
+.card.unavailable { opacity:.72; }
+.card.unavailable .card-img { position:relative; }
+.card.unavailable .card-img::after {
+  content:''; position:absolute; inset:0;
+  background:rgba(10,9,8,.55);
+  pointer-events:none;
+}
+.card.unavailable .card-footer { opacity:.45; pointer-events:none; }
+.card.unavailable .stock-info { opacity:.5; }
 .card-body { padding:1.1rem 1.2rem; flex:1; display:flex; flex-direction:column; gap:.4rem; }
 .card-cat { font-size:.68rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
 .card-name { font-family:'Playfair Display',serif; font-weight:700; font-size:1.2rem; line-height:1.25; }
@@ -973,9 +983,10 @@ function renderCatalog(filter='all') {
   document.getElementById('catalog').innerHTML = list.map(p => {
     const avail = p.available;
     const qty = quantities[p.id] || 1;
-    const sc = avail > 0 ? 'ok' : 'out';
-    const sl = avail > 0 ? `Disponible (${avail})` : 'Indisponible';
-    return `<div class="card">
+    const sc = avail > 0 ? 'ok' : 'soon';
+    const sl = avail > 0 ? `Disponible (${avail})` : '⏳ Bientôt disponible';
+    const cardCls = avail === 0 ? 'card unavailable' : 'card';
+    return `<div class="${cardCls}">
       <div class="card-img">
         <span class="stock-badge ${sc}">${sl}</span>
         ${renderIcon(p.icon, "card-item-img")}
