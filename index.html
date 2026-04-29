@@ -815,8 +815,8 @@ const PRODUCTS_BASE = [
         showToast('⚠️ Groupe local — Sheets : ' + JSON.stringify(result));
       }
     } catch(e) {
-      showToast('⚠️ Groupe sauvegardé localement seulement');
-      console.warn('Sheets createGroup error:', e.message);
+      showToast('⚠️ Erreur : ' + e.message);
+      console.error('Sheets createGroup error:', e);
     }
   }
 
