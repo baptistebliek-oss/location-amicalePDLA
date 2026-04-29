@@ -118,6 +118,51 @@ header {
 /* ══ PAGE ══ */
 .page { max-width:1100px; margin:0 auto; padding:2.5rem 2rem; }
 
+/* ══ CODE GROUPE ══ */
+.group-code-field { display:flex; flex-direction:column; gap:.3rem; }
+.group-code-field label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); }
+.group-code-input-wrap { display:flex; gap:.4rem; align-items:center; }
+.group-code-input { background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--text); padding:.45rem .8rem; font-family:'DM Sans',sans-serif; font-size:.88rem; border-radius:2px; outline:none; width:130px; letter-spacing:.1em; text-transform:uppercase; transition:border-color .2s; }
+.group-code-input:focus { border-color:var(--accent); }
+.group-code-btn { background:var(--accent); border:none; color:#fff; padding:.45rem .9rem; font-family:'DM Sans',sans-serif; font-weight:600; font-size:.78rem; cursor:pointer; border-radius:2px; transition:background .2s; white-space:nowrap; }
+.group-code-btn:hover { background:var(--accent-dim); }
+.group-badge { display:inline-flex; align-items:center; gap:.4rem; background:rgba(45,122,79,.18); border:1px solid rgba(45,122,79,.35); color:var(--green); padding:.3rem .75rem; border-radius:2px; font-size:.75rem; font-weight:700; }
+.group-badge-clear { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:.85rem; padding:0; line-height:1; }
+.group-badge-clear:hover { color:var(--red); }
+
+/* ── Onglet Groupes admin ── */
+#tabGroups { background:rgba(10,9,8,.65); min-height:60vh; }
+.groups-section { padding:2rem; }
+.groups-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:.8rem; }
+.groups-header h3 { font-family:'Playfair Display',serif; font-weight:700; font-size:1.3rem; }
+.group-cards { display:flex; flex-direction:column; gap:1.2rem; }
+.group-card { background:rgba(28,27,25,.88); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+.group-card-head { display:flex; align-items:center; justify-content:space-between; padding:.9rem 1.2rem; border-bottom:1px solid var(--border); gap:1rem; flex-wrap:wrap; }
+.group-card-name { font-weight:700; font-size:1rem; display:flex; align-items:center; gap:.6rem; }
+.group-card-code { font-family:monospace; font-size:.8rem; background:rgba(224,105,46,.18); border:1px solid rgba(224,105,46,.3); color:var(--accent); padding:.2rem .6rem; border-radius:2px; letter-spacing:.12em; }
+.group-card-actions { display:flex; gap:.5rem; }
+.group-delete-btn { background:rgba(185,53,53,.15); border:1px solid rgba(185,53,53,.3); color:var(--red); padding:.32rem .7rem; font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:600; cursor:pointer; border-radius:2px; transition:all .2s; }
+.group-delete-btn:hover { background:rgba(185,53,53,.3); }
+.group-card-body { padding:1.2rem; }
+.group-items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:.7rem; }
+.group-item-row { display:flex; align-items:center; gap:.7rem; padding:.6rem .8rem; background:rgba(10,9,8,.35); border:1px solid var(--border); border-radius:3px; }
+.group-item-toggle { accent-color:var(--accent); width:16px; height:16px; cursor:pointer; flex-shrink:0; }
+.group-item-img { width:32px; height:32px; object-fit:cover; border-radius:2px; flex-shrink:0; }
+.group-item-name { flex:1; font-size:.83rem; font-weight:600; }
+.group-item-price { display:flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--text-muted); }
+.group-item-price input { width:58px; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.28rem .4rem; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; border-radius:2px; text-align:center; outline:none; }
+.group-item-price input:focus { border-color:var(--accent); }
+.group-item-disabled { opacity:.4; }
+
+/* Modale création groupe */
+.new-group-form { background:rgba(28,27,25,.95); border:1px solid var(--border); border-radius:4px; padding:1.5rem; margin-bottom:1.5rem; display:none; flex-direction:column; gap:.9rem; }
+.new-group-form.open { display:flex; }
+.new-group-form h4 { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; margin:0; }
+.new-group-row { display:flex; gap:.8rem; flex-wrap:wrap; }
+.new-group-input { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.42rem .75rem; font-family:'DM Sans',sans-serif; font-size:.88rem; border-radius:2px; outline:none; flex:1; min-width:140px; }
+.new-group-input:focus { border-color:var(--accent); }
+.new-group-hint { font-size:.75rem; color:var(--text-muted); }
+
 /* ══ VOILE SOMBRE — sections principales ══ */
 /* Zone catalogue (page d'accueil) */
 #shopView > .page {
@@ -473,6 +518,14 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
         <button class="date-banner-btn" onclick="searchDates()">Voir le matériel disponible →</button>
         <span class="date-selected-info" id="dateSelectedInfo"></span>
       </div>
+      <div class="group-code-field" id="groupCodeField">
+        <label>🏷️ Code groupe</label>
+        <div class="group-code-input-wrap">
+          <input class="group-code-input" type="text" id="groupCodeInput" placeholder="CODE" maxlength="20" oninput="this.value=this.value.toUpperCase()">
+          <button class="group-code-btn" onclick="applyGroupCode()">Appliquer</button>
+        </div>
+        <div id="groupBadge" style="display:none"></div>
+      </div>
     </div>
   </div>
 
@@ -521,6 +574,7 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
       <button class="tab-btn active" onclick="showTab('orders',this)">📦 Commandes</button>
       <button class="tab-btn" onclick="showTab('stock',this)">📊 Stock</button>
       <button class="tab-btn" onclick="showTab('tarifs',this)">💰 Tarifs</button>
+      <button class="tab-btn" onclick="showTab('groupes',this)">🏷️ Groupes</button>
       <button class="tab-btn" onclick="showTab('settings',this)">⚙️ Paramètres</button>
     </div>
 
@@ -572,6 +626,33 @@ footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:cen
         </div>
         <div class="stock-hint">💡 Modifiez le prix par jour de chaque article. Cochez <strong>Gratuit</strong> pour mettre un article à 0 € (il apparaîtra gratuitement dans le catalogue).</div>
         <div class="stock-grid" id="priceGrid"></div>
+      </div>
+    </div>
+
+    <!-- GROUPES TAB -->
+    <div id="tabGroupes" style="display:none">
+      <div class="groups-section">
+        <div class="groups-header">
+          <h3>🏷️ Groupes d'utilisateurs</h3>
+          <button class="settings-btn" onclick="toggleNewGroupForm()">＋ Nouveau groupe</button>
+        </div>
+        <div class="stock-hint">💡 Créez des groupes avec un code d'accès. Les membres de ce groupe verront uniquement les articles que vous activez, aux tarifs que vous définissez.</div>
+
+        <!-- Formulaire création -->
+        <div class="new-group-form" id="newGroupForm">
+          <h4>Nouveau groupe</h4>
+          <div class="new-group-row">
+            <input class="new-group-input" type="text" id="newGroupName" placeholder="Nom du groupe (ex: Pompiers volontaires)">
+            <input class="new-group-input" type="text" id="newGroupCode" placeholder="Code d'accès (ex: POMPIER2026)" maxlength="20" oninput="this.value=this.value.toUpperCase()" style="flex:0 0 220px">
+          </div>
+          <div class="new-group-hint">⚠️ Le code est sensible aux majuscules — utilisez des majuscules sans espace.</div>
+          <div style="display:flex;gap:.6rem">
+            <button class="settings-btn" onclick="createGroup()">✅ Créer le groupe</button>
+            <button class="settings-btn" style="background:transparent;border:1px solid var(--border);color:var(--text-muted)" onclick="toggleNewGroupForm()">Annuler</button>
+          </div>
+        </div>
+
+        <div class="group-cards" id="groupCards"></div>
       </div>
     </div>
 
@@ -698,6 +779,181 @@ const PRODUCTS_BASE = [
   {id:10,cat:'animation', icon:'📸', name:'Photobooth',             desc:'Borne photo automatique avec imprimante intégrée, fond inclus.',         price:60,  unit:'jour', defaultStock:1},
 ];
 
+
+  // ════════════════════════════════════════
+  // SYSTÈME GROUPES UTILISATEURS
+  // ════════════════════════════════════════
+
+  let activeGroup = null; // groupe actuellement actif côté client
+
+  // ── Stockage groupes (localStorage + Sheets) ──
+  let _groups = [];
+
+  function getGroups() { return _groups; }
+
+  function saveGroups(groups) {
+    _groups = groups;
+    localStorage.setItem('pdla_groups', JSON.stringify(groups));
+    pushGroupsToSheets(groups);
+  }
+
+  async function pushGroupsToSheets(groups) {
+    if (!_sheetsUrl) return;
+    try {
+      await callSheets('saveGroups', { groups });
+    } catch(e) { console.warn('Sheets groups sync error:', e); }
+  }
+
+  function loadGroupsFromLocalStorage() {
+    try { _groups = JSON.parse(localStorage.getItem('pdla_groups') || '[]'); } catch { _groups = []; }
+  }
+
+  // ── Trouver un groupe par son code ──
+  function findGroupByCode(code) {
+    return getGroups().find(g => g.code === code.trim().toUpperCase()) || null;
+  }
+
+  // ── Appliquer un code groupe côté client ──
+  function applyGroupCode() {
+    const code = document.getElementById('groupCodeInput').value.trim().toUpperCase();
+    const badge = document.getElementById('groupBadge');
+    if (!code) { showToast('⚠️ Entrez un code groupe'); return; }
+    const group = findGroupByCode(code);
+    if (!group) {
+      showToast('❌ Code groupe invalide');
+      badge.style.display = 'none';
+      activeGroup = null;
+      renderCatalog(currentFilter);
+      return;
+    }
+    activeGroup = group;
+    badge.style.display = 'block';
+    badge.innerHTML = `<span class="group-badge">✅ ${group.name} <button class="group-badge-clear" onclick="clearGroupCode()" title="Retirer le code">✕</button></span>`;
+    document.getElementById('groupCodeInput').value = '';
+    showToast(\`✅ Code groupe "\${group.name}" activé\`);
+    renderCatalog(currentFilter);
+  }
+
+  function clearGroupCode() {
+    activeGroup = null;
+    document.getElementById('groupBadge').style.display = 'none';
+    renderCatalog(currentFilter);
+    showToast('Code groupe retiré');
+  }
+
+  // ── Prix effectif selon groupe actif ──
+  function getEffectivePrice(id) {
+    if (activeGroup) {
+      const ov = activeGroup.items?.find(i => i.id == id);
+      if (ov && ov.enabled && ov.price !== undefined) return ov.price;
+    }
+    return getPrice(id);
+  }
+
+  // ── Vérifier si un article est visible pour le groupe actif ──
+  function isVisibleForGroup(id) {
+    if (!activeGroup) return true;
+    const ov = activeGroup.items?.find(i => i.id == id);
+    return ov ? ov.enabled : false; // si groupe actif: seulement les articles activés
+  }
+
+  // ════ Admin — gestion des groupes ════
+
+  function toggleNewGroupForm() {
+    const form = document.getElementById('newGroupForm');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('newGroupName').focus();
+    }
+  }
+
+  function createGroup() {
+    const name = document.getElementById('newGroupName').value.trim();
+    const code = document.getElementById('newGroupCode').value.trim().toUpperCase();
+    if (!name || !code) { showToast('⚠️ Nom et code requis'); return; }
+    const groups = getGroups();
+    if (groups.find(g => g.code === code)) { showToast('❌ Ce code existe déjà'); return; }
+    // Initialise tous les articles avec prix par défaut, désactivés
+    const items = PRODUCTS_BASE.map(p => ({id: p.id, enabled: false, price: getPrice(p.id)}));
+    groups.push({ id: Date.now(), name, code, items });
+    saveGroups(groups);
+    document.getElementById('newGroupName').value = '';
+    document.getElementById('newGroupCode').value = '';
+    document.getElementById('newGroupForm').classList.remove('open');
+    renderGroupsTab();
+    showToast(\`✅ Groupe "\${name}" créé\`);
+  }
+
+  function deleteGroup(id) {
+    if (!confirm('Supprimer ce groupe ?')) return;
+    saveGroups(getGroups().filter(g => g.id !== id));
+    renderGroupsTab();
+    showToast('Groupe supprimé');
+  }
+
+  function updateGroupItem(groupId, itemId, field, value) {
+    const groups = getGroups();
+    const g = groups.find(g => g.id === groupId);
+    if (!g) return;
+    const item = g.items.find(i => i.id == itemId);
+    if (!item) return;
+    if (field === 'enabled') item.enabled = value;
+    if (field === 'price') item.price = Math.max(0, parseFloat(value)||0);
+    saveGroups(groups);
+  }
+
+  function renderGroupsTab() {
+    const groups = getGroups();
+    const container = document.getElementById('groupCards');
+    if (!container) return;
+    if (!groups.length) {
+      container.innerHTML = \`<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.9rem">Aucun groupe créé. Cliquez sur <strong>+ Nouveau groupe</strong> pour commencer.</div>\`;
+      return;
+    }
+    container.innerHTML = groups.map(g => \`
+      <div class="group-card">
+        <div class="group-card-head">
+          <div class="group-card-name">
+            🏷️ \${g.name}
+            <span class="group-card-code">\${g.code}</span>
+          </div>
+          <div class="group-card-actions">
+            <button class="group-delete-btn" onclick="deleteGroup(\${g.id})">🗑️ Supprimer</button>
+          </div>
+        </div>
+        <div class="group-card-body">
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Articles accessibles &amp; tarifs</div>
+          <div class="group-items-grid">
+            \${PRODUCTS_BASE.map(p => {
+              const ov = g.items?.find(i => i.id == p.id) || {enabled:false, price:getPrice(p.id)};
+              const disabledCls = ov.enabled ? '' : 'group-item-disabled';
+              const icon = p.icon.startsWith('./') ? \`<img class="group-item-img" src="\${p.icon}" alt="">\` : \`<span style="font-size:1.3rem">\${p.icon}</span>\`;
+              return \`<div class="group-item-row \${disabledCls}" id="grow-\${g.id}-\${p.id}">
+                <input class="group-item-toggle" type="checkbox" \${ov.enabled?'checked':''} onchange="toggleGroupItem(\${g.id},\${p.id},this.checked)">
+                \${icon}
+                <span class="group-item-name">\${p.name}</span>
+                <div class="group-item-price">
+                  <input type="number" min="0" step="0.5" value="\${ov.price}" onchange="updateGroupItem(\${g.id},\${p.id},'price',this.value)" \${ov.enabled?'':'disabled'}>
+                  <span>€/j</span>
+                </div>
+              </div>\`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    \`).join('');
+  }
+
+  function toggleGroupItem(groupId, itemId, enabled) {
+    updateGroupItem(groupId, itemId, 'enabled', enabled);
+    const row = document.getElementById(\`grow-\${groupId}-\${itemId}\`);
+    if (row) {
+      row.classList.toggle('group-item-disabled', !enabled);
+      const priceInput = row.querySelector('input[type="number"]');
+      if (priceInput) priceInput.disabled = !enabled;
+    }
+  }
+
   // Render icon: image path or emoji
   function renderIcon(icon, cls='') {
     if(icon && icon.startsWith('./')) return `<img src="${icon}" class="item-img ${cls}" alt="">`;
@@ -752,6 +1008,13 @@ async function loadFromSheets() {
       const val = data.prices && (data.prices[sid] !== undefined ? data.prices[sid] : data.prices[p.id]);
       _prices[p.id] = val !== undefined && val !== '' ? Number(val) : p.price;
     });
+    // Groupes
+    if (data.groups && Array.isArray(data.groups)) {
+      _groups = data.groups;
+      localStorage.setItem('pdla_groups', JSON.stringify(_groups));
+    } else {
+      loadGroupsFromLocalStorage();
+    }
     _sheetsLoaded = true;
     // Backup to localStorage
     localStorage.setItem('fl_orders', JSON.stringify(_orders));
@@ -767,6 +1030,7 @@ async function loadFromSheets() {
 
 function loadFromLocalStorage() {
   try { _orders = JSON.parse(localStorage.getItem('fl_orders')||'[]'); } catch{ _orders=[]; }
+  loadGroupsFromLocalStorage();
   const s = getSettings();
   PRODUCTS_BASE.forEach(p => {
     _stock[p.id]  = s.stock  && s.stock[p.id]  !== undefined ? s.stock[p.id]  : p.defaultStock;
@@ -927,9 +1191,11 @@ function showTab(tab, btn) {
   document.getElementById('tabOrders').style.display  = tab==='orders'  ? '' : 'none';
   document.getElementById('tabStock').style.display   = tab==='stock'   ? '' : 'none';
   document.getElementById('tabTarifs').style.display  = tab==='tarifs'  ? '' : 'none';
+  document.getElementById('tabGroupes').style.display = tab==='groupes' ? '' : 'none';
   document.getElementById('tabSettings').style.display= tab==='settings'? '' : 'none';
   if (tab==='stock')    renderStockGrid();
   if (tab==='tarifs')   renderPriceGrid();
+  if (tab==='groupes')  renderGroupsTab();
   if (tab==='settings') loadSettings();
 }
 
@@ -983,13 +1249,16 @@ function renderCatalog(filter='all') {
     return;
   }
   const products = getProducts(selectedStart, selectedEnd);
-  const list = filter==='all' ? products : products.filter(p=>p.cat===filter);
+  let list = filter==='all' ? products : products.filter(p=>p.cat===filter);
+  // Filtrer selon groupe actif
+  if (activeGroup) list = list.filter(p => isVisibleForGroup(p.id));
   document.getElementById('catalog').innerHTML = list.map(p => {
     const avail = p.available;
     const qty = quantities[p.id] || 1;
     const sc = avail > 0 ? 'ok' : 'soon';
     const sl = avail > 0 ? `Disponible (${avail})` : '⏳ Bientôt disponible';
     const cardCls = avail === 0 ? 'card unavailable' : 'card';
+    const effectivePrice = getEffectivePrice(p.id);
     return `<div class="${cardCls}">
       <div class="card-img">
         <span class="stock-badge ${sc}">${sl}</span>
@@ -1002,7 +1271,7 @@ function renderCatalog(filter='all') {
       </div>
       <div class="stock-info">Stock : <strong>${p.stock}</strong> total | <strong>${avail}</strong> dispo à ces dates</div>
       <div class="card-footer">
-        <div class="card-price">${p.price === 0 ? '<span style="color:var(--green);font-size:1.1rem">Gratuit</span>' : (p.price < 1 ? p.price.toFixed(2) : p.price) + ' €'}<small>/ ${p.unit}</small></div>
+        <div class="card-price">${effectivePrice === 0 ? '<span style="color:var(--green);font-size:1.1rem">Gratuit</span>' : (effectivePrice < 1 ? effectivePrice.toFixed(2) : effectivePrice) + ' €'}<small>/ ${p.unit}</small></div>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="changeQty(${p.id},-1)">−</button>
           <div class="qty-display" id="qty-${p.id}">${qty}</div>
@@ -1143,7 +1412,7 @@ async function submitOrder() {
   const days = Math.round((new Date(e)-new Date(s))/86400000);
   const items = keys.map(k=>{
     const p = PRODUCTS_BASE.find(x=>x.id==k);
-    return {id:p.id, name:p.name, icon:p.icon, qty:cart[k], price:getPrice(p.id), unit:p.unit};
+    return {id:p.id, name:p.name, icon:p.icon, qty:cart[k], price:getEffectivePrice(p.id), unit:p.unit};
   });
   const sub = items.reduce((a,i)=>a+i.price*i.qty*days,0);
   const ttc = sub*1.2;
