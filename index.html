@@ -800,22 +800,40 @@ const PRODUCTS_BASE = [
   // ── Créer un groupe (envoi minimal : nom + code) ──
   async function sheetsCreateGroup(group) {
     if (!_sheetsUrl) return;
-    try { await callSheets('createGroup', { group: { id: group.id, name: group.name, code: group.code } }); }
-    catch(e) { console.warn('Sheets createGroup error:', e); }
+    try {
+      // Envoi : meta + items initiaux (prix défaut, tout désactivé)
+      const defaultItems = PRODUCTS_BASE.map(p => ({
+        id: p.id, enabled: false, price: getPrice(p.id)
+      }));
+      const result = await callSheets('createGroup', {
+        group: { id: group.id, name: group.name, code: group.code },
+        items: defaultItems
+      });
+      if (result && result.success) {
+        showToast('✅ Groupe synchronisé avec Sheets');
+      } else {
+        showToast('⚠️ Groupe local — Sheets : ' + JSON.stringify(result));
+      }
+    } catch(e) {
+      showToast('⚠️ Groupe sauvegardé localement seulement');
+      console.warn('Sheets createGroup error:', e.message);
+    }
   }
 
   // ── Supprimer un groupe ──
   async function sheetsDeleteGroup(groupId) {
     if (!_sheetsUrl) return;
-    try { await callSheets('deleteGroup', { groupId }); }
-    catch(e) { console.warn('Sheets deleteGroup error:', e); }
+    try {
+      await callSheets('deleteGroup', { groupId });
+    } catch(e) { console.warn('Sheets deleteGroup error:', e); }
   }
 
   // ── Mettre à jour un seul article d'un groupe ──
   async function sheetsUpdateGroupItem(groupId, itemId, enabled, price) {
     if (!_sheetsUrl) return;
-    try { await callSheets('updateGroupItem', { groupId, itemId, enabled, price }); }
-    catch(e) { console.warn('Sheets updateGroupItem error:', e); }
+    try {
+      await callSheets('updateGroupItem', { groupId, itemId, enabled, price });
+    } catch(e) { console.warn('Sheets updateGroupItem error:', e); }
   }
 
   function loadGroupsFromLocalStorage() {
