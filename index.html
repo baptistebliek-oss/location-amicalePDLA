@@ -800,15 +800,8 @@ const PRODUCTS_BASE = [
   async function pushGroupsToSheets(groups) {
     if (!_sheetsUrl) return;
     try {
-      // POST obligatoire — les groupes depassent la limite URL en GET
-      const resp = await fetch(_sheetsUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'saveGroups', data: JSON.stringify({ groups }) })
-      });
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error);
-      showToast('Groupes synchronises avec Sheets');
+      await callSheets('saveGroups', { groups });
+      showToast('Groupes synchronises');
     } catch(e) {
       console.warn('Sheets groups sync error:', e);
       showToast('Groupes sauvegardes localement');
@@ -980,16 +973,29 @@ function saveSettings(s){ localStorage.setItem('fl_settings', JSON.stringify(s))
 function getAdminPwd(){ return localStorage.getItem('fl_admin_pwd') || 'Amicale2026'; }
 function setAdminPwd(p){ localStorage.setItem('fl_admin_pwd', p); }
 
-// ── Sheets API call (GET — CORS-safe avec Apps Script) ──
+// ── Sheets API call ──
+// GET pour getAll (lecture), POST pour toutes les ecritures
 async function callSheets(action, payload={}) {
   const url = _sheetsUrl;
   if (!url) throw new Error('URL Sheets non configurée');
-  const params = new URLSearchParams({
-    action,
-    data: JSON.stringify(payload)
-  });
-  const resp = await fetch(`${url}?${params}`, {method:'GET'});
-  const data = await resp.json();
+
+  let resp;
+  if (action === 'getAll') {
+    // Lecture : GET simple
+    resp = await fetch(url + '?action=getAll', { method: 'GET' });
+  } else {
+    // Ecritures : POST avec body JSON (evite la limite URL)
+    resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain evite le preflight CORS
+      body: JSON.stringify({ action, data: JSON.stringify(payload) })
+    });
+  }
+
+  const text = await resp.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch(e) { throw new Error('Réponse invalide : ' + text.substring(0, 200)); }
   if (data.error) throw new Error(data.error);
   return data;
 }
