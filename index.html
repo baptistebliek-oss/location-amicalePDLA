@@ -800,8 +800,19 @@ const PRODUCTS_BASE = [
   async function pushGroupsToSheets(groups) {
     if (!_sheetsUrl) return;
     try {
-      await callSheets('saveGroups', { groups });
-    } catch(e) { console.warn('Sheets groups sync error:', e); }
+      // POST obligatoire — les groupes depassent la limite URL en GET
+      const resp = await fetch(_sheetsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveGroups', data: JSON.stringify({ groups }) })
+      });
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      showToast('Groupes synchronises avec Sheets');
+    } catch(e) {
+      console.warn('Sheets groups sync error:', e);
+      showToast('Groupes sauvegardes localement');
+    }
   }
 
   function loadGroupsFromLocalStorage() {
