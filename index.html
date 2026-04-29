@@ -791,21 +791,31 @@ const PRODUCTS_BASE = [
 
   function getGroups() { return _groups; }
 
-  function saveGroups(groups) {
+  // ── Sauvegarde locale uniquement (pas de Sheets) ──
+  function saveGroupsLocal(groups) {
     _groups = groups;
     localStorage.setItem('pdla_groups', JSON.stringify(groups));
-    pushGroupsToSheets(groups);
   }
 
-  async function pushGroupsToSheets(groups) {
+  // ── Créer un groupe (envoi minimal : nom + code) ──
+  async function sheetsCreateGroup(group) {
     if (!_sheetsUrl) return;
-    try {
-      await callSheets('saveGroups', { groups });
-      showToast('Groupes synchronises');
-    } catch(e) {
-      console.warn('Sheets groups sync error:', e);
-      showToast('Groupes sauvegardes localement');
-    }
+    try { await callSheets('createGroup', { group: { id: group.id, name: group.name, code: group.code } }); }
+    catch(e) { console.warn('Sheets createGroup error:', e); }
+  }
+
+  // ── Supprimer un groupe ──
+  async function sheetsDeleteGroup(groupId) {
+    if (!_sheetsUrl) return;
+    try { await callSheets('deleteGroup', { groupId }); }
+    catch(e) { console.warn('Sheets deleteGroup error:', e); }
+  }
+
+  // ── Mettre à jour un seul article d'un groupe ──
+  async function sheetsUpdateGroupItem(groupId, itemId, enabled, price) {
+    if (!_sheetsUrl) return;
+    try { await callSheets('updateGroupItem', { groupId, itemId, enabled, price }); }
+    catch(e) { console.warn('Sheets updateGroupItem error:', e); }
   }
 
   function loadGroupsFromLocalStorage() {
@@ -878,8 +888,10 @@ const PRODUCTS_BASE = [
     const groups = getGroups();
     if (groups.find(g => g.code === code)) { showToast('Ce code existe deja'); return; }
     const items = PRODUCTS_BASE.map(p => ({id: p.id, enabled: false, price: getPrice(p.id)}));
-    groups.push({ id: Date.now(), name, code, items });
-    saveGroups(groups);
+    const newGroup = { id: Date.now(), name, code, items };
+    groups.push(newGroup);
+    saveGroupsLocal(groups);
+    sheetsCreateGroup(newGroup);
     document.getElementById('newGroupName').value = '';
     document.getElementById('newGroupCode').value = '';
     document.getElementById('newGroupForm').classList.remove('open');
@@ -889,7 +901,8 @@ const PRODUCTS_BASE = [
 
   function deleteGroup(id) {
     if (!confirm('Supprimer ce groupe ?')) return;
-    saveGroups(getGroups().filter(g => g.id !== id));
+    saveGroupsLocal(getGroups().filter(g => g.id !== id));
+    sheetsDeleteGroup(id);
     renderGroupsTab();
     showToast('Groupe supprime');
   }
@@ -901,8 +914,10 @@ const PRODUCTS_BASE = [
     const item = g.items.find(i => i.id == itemId);
     if (!item) return;
     if (field === 'enabled') item.enabled = value;
-    if (field === 'price') item.price = Math.max(0, parseFloat(value)||0);
-    saveGroups(groups);
+    if (field === 'price')   item.price   = Math.max(0, parseFloat(value)||0);
+    saveGroupsLocal(groups);
+    // Envoi ciblé : seulement cet article
+    sheetsUpdateGroupItem(groupId, itemId, item.enabled, item.price);
   }
 
   function toggleGroupItem(groupId, itemId, enabled) {
