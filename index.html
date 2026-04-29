@@ -929,7 +929,7 @@ const PRODUCTS_BASE = [
           icon +
           '<span class="group-item-name">' + p.name + '</span>' +
           '<div class="group-item-price">' +
-            '<input type="number" min="0" step="0.5" value="' + ov.price + '" onchange="updateGroupItem(' + g.id + ',' + p.id + ','price',this.value)"' + (ov.enabled ? '' : ' disabled') + '>' +
+            '<input type="number" min="0" step="0.5" value="' + ov.price + '" onchange="updateGroupItem(' + g.id + ',' + p.id + ',\'price\',this.value)"' + (ov.enabled ? '' : ' disabled') + '>' +
             '<span>€/j</span>' +
           '</div>' +
         '</div>';
