@@ -830,7 +830,7 @@ const PRODUCTS_BASE = [
     badge.style.display = 'block';
     badge.innerHTML = `<span class="group-badge">✅ ${group.name} <button class="group-badge-clear" onclick="clearGroupCode()" title="Retirer le code">✕</button></span>`;
     document.getElementById('groupCodeInput').value = '';
-    showToast(\`✅ Code groupe "\${group.name}" activé\`);
+    showToast('✅ Code groupe "' + group.name + '" activé');
     renderCatalog(currentFilter);
   }
 
@@ -870,10 +870,9 @@ const PRODUCTS_BASE = [
   function createGroup() {
     const name = document.getElementById('newGroupName').value.trim();
     const code = document.getElementById('newGroupCode').value.trim().toUpperCase();
-    if (!name || !code) { showToast('⚠️ Nom et code requis'); return; }
+    if (!name || !code) { showToast('Nom et code requis'); return; }
     const groups = getGroups();
-    if (groups.find(g => g.code === code)) { showToast('❌ Ce code existe déjà'); return; }
-    // Initialise tous les articles avec prix par défaut, désactivés
+    if (groups.find(g => g.code === code)) { showToast('Ce code existe deja'); return; }
     const items = PRODUCTS_BASE.map(p => ({id: p.id, enabled: false, price: getPrice(p.id)}));
     groups.push({ id: Date.now(), name, code, items });
     saveGroups(groups);
@@ -881,14 +880,14 @@ const PRODUCTS_BASE = [
     document.getElementById('newGroupCode').value = '';
     document.getElementById('newGroupForm').classList.remove('open');
     renderGroupsTab();
-    showToast(\`✅ Groupe "\${name}" créé\`);
+    showToast('Groupe "' + name + '" cree');
   }
 
   function deleteGroup(id) {
     if (!confirm('Supprimer ce groupe ?')) return;
     saveGroups(getGroups().filter(g => g.id !== id));
     renderGroupsTab();
-    showToast('Groupe supprimé');
+    showToast('Groupe supprime');
   }
 
   function updateGroupItem(groupId, itemId, field, value) {
@@ -902,51 +901,9 @@ const PRODUCTS_BASE = [
     saveGroups(groups);
   }
 
-  function renderGroupsTab() {
-    const groups = getGroups();
-    const container = document.getElementById('groupCards');
-    if (!container) return;
-    if (!groups.length) {
-      container.innerHTML = \`<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.9rem">Aucun groupe créé. Cliquez sur <strong>+ Nouveau groupe</strong> pour commencer.</div>\`;
-      return;
-    }
-    container.innerHTML = groups.map(g => \`
-      <div class="group-card">
-        <div class="group-card-head">
-          <div class="group-card-name">
-            🏷️ \${g.name}
-            <span class="group-card-code">\${g.code}</span>
-          </div>
-          <div class="group-card-actions">
-            <button class="group-delete-btn" onclick="deleteGroup(\${g.id})">🗑️ Supprimer</button>
-          </div>
-        </div>
-        <div class="group-card-body">
-          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Articles accessibles &amp; tarifs</div>
-          <div class="group-items-grid">
-            \${PRODUCTS_BASE.map(p => {
-              const ov = g.items?.find(i => i.id == p.id) || {enabled:false, price:getPrice(p.id)};
-              const disabledCls = ov.enabled ? '' : 'group-item-disabled';
-              const icon = p.icon.startsWith('./') ? \`<img class="group-item-img" src="\${p.icon}" alt="">\` : \`<span style="font-size:1.3rem">\${p.icon}</span>\`;
-              return \`<div class="group-item-row \${disabledCls}" id="grow-\${g.id}-\${p.id}">
-                <input class="group-item-toggle" type="checkbox" \${ov.enabled?'checked':''} onchange="toggleGroupItem(\${g.id},\${p.id},this.checked)">
-                \${icon}
-                <span class="group-item-name">\${p.name}</span>
-                <div class="group-item-price">
-                  <input type="number" min="0" step="0.5" value="\${ov.price}" onchange="updateGroupItem(\${g.id},\${p.id},'price',this.value)" \${ov.enabled?'':'disabled'}>
-                  <span>€/j</span>
-                </div>
-              </div>\`;
-            }).join('')}
-          </div>
-        </div>
-      </div>
-    \`).join('');
-  }
-
   function toggleGroupItem(groupId, itemId, enabled) {
     updateGroupItem(groupId, itemId, 'enabled', enabled);
-    const row = document.getElementById(\`grow-\${groupId}-\${itemId}\`);
+    const row = document.getElementById('grow-' + groupId + '-' + itemId);
     if (row) {
       row.classList.toggle('group-item-disabled', !enabled);
       const priceInput = row.querySelector('input[type="number"]');
@@ -954,7 +911,43 @@ const PRODUCTS_BASE = [
     }
   }
 
-  // Render icon: image path or emoji
+  function renderGroupsTab() {
+    const groups = getGroups();
+    const container = document.getElementById('groupCards');
+    if (!container) return;
+    if (!groups.length) {
+      container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);font-size:.9rem">Aucun groupe. Cliquez sur <strong>+ Nouveau groupe</strong> pour commencer.</div>';
+      return;
+    }
+    container.innerHTML = groups.map(function(g) {
+      const itemsHtml = PRODUCTS_BASE.map(function(p) {
+        const ov = g.items && g.items.find(function(i){ return i.id == p.id; }) || {enabled:false, price:getPrice(p.id)};
+        const disabledCls = ov.enabled ? '' : 'group-item-disabled';
+        const icon = p.icon.startsWith('./') ? '<img class="group-item-img" src="' + p.icon + '" alt="">' : '<span style="font-size:1.3rem">' + p.icon + '</span>';
+        return '<div class="group-item-row ' + disabledCls + '" id="grow-' + g.id + '-' + p.id + '">' +
+          '<input class="group-item-toggle" type="checkbox"' + (ov.enabled ? ' checked' : '') + ' onchange="toggleGroupItem(' + g.id + ',' + p.id + ',this.checked)">' +
+          icon +
+          '<span class="group-item-name">' + p.name + '</span>' +
+          '<div class="group-item-price">' +
+            '<input type="number" min="0" step="0.5" value="' + ov.price + '" onchange="updateGroupItem(' + g.id + ',' + p.id + ','price',this.value)"' + (ov.enabled ? '' : ' disabled') + '>' +
+            '<span>€/j</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      return '<div class="group-card">' +
+        '<div class="group-card-head">' +
+          '<div class="group-card-name">🏷️ ' + g.name + ' <span class="group-card-code">' + g.code + '</span></div>' +
+          '<div class="group-card-actions"><button class="group-delete-btn" onclick="deleteGroup(' + g.id + ')">🗑️ Supprimer</button></div>' +
+        '</div>' +
+        '<div class="group-card-body">' +
+          '<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Articles accessibles &amp; tarifs</div>' +
+          '<div class="group-items-grid">' + itemsHtml + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+    // Render icon: image path or emoji
   function renderIcon(icon, cls='') {
     if(icon && icon.startsWith('./')) return `<img src="${icon}" class="item-img ${cls}" alt="">`;
     return `<span class="${cls}">${icon}</span>`;
